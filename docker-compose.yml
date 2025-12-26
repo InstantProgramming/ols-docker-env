@@ -3,63 +3,62 @@ services:
     image: mariadb:11.4
     logging:
       driver: none
-    command: ["--max-allowed-packet=512M"]
+    command:
+      - '--max-allowed-packet=512M'
     volumes:
-      - "./data/db:/var/lib/mysql:delegated"
+      - './data/db:/var/lib/mysql:delegated'
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
+      MYSQL_DATABASE: '${MYSQL_DATABASE}'
+      MYSQL_USER: '${MYSQL_USER}'
+      MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
     restart: always
-    networks:
-      - default
+
   litespeed:
+    # 🔧 Remplace par un tag réel (exemple ci-dessous)
     image: litespeedtech/openlitespeed:latest
     container_name: litespeed
     env_file:
       - .env
     volumes:
-      - ./lsws/conf:/usr/local/lsws/conf
-      - ./lsws/admin-conf:/usr/local/lsws/admin/conf
-      - ./bin/container:/usr/local/bin
-      - ./sites:/var/www/vhosts/
-      - ./acme:/root/.acme.sh/
-      - ./logs:/usr/local/lsws/logs/
+      - './lsws/conf:/usr/local/lsws/conf'
+      - './lsws/admin-conf:/usr/local/lsws/admin/conf'
+      - './bin/container:/usr/local/bin'
+      - './sites:/var/www/vhosts/'
+      - './acme:/root/.acme.sh/'
+      - './logs:/usr/local/lsws/logs/'
     ports:
-      - 80:80
-      - 443:443
-      - 443:443/udp
-      - 7080:7080
+      - '7080:7080'
+      # ⚠️ Dans Coolify + Traefik, évite de publier 80/443 ici (sinon conflit)
+      # - '80:80'
+      # - '443:443'
+      # - '443:443/udp'
     restart: always
     environment:
-      TZ: ${TimeZone}
-    networks:
-      - default
+      TZ: '${TimeZone}'
+
   phpmyadmin:
+    # 🔧 Tag explicite
     image: phpmyadmin/phpmyadmin:latest
     env_file:
       - .env
     ports:
-      - 8080:80
+      - '8080:80'
     environment:
       PMA_HOST: mysql
     restart: always
-    networks:
-      - default
+
   redis:
-    image: "redis:alpine"
+    image: redis:7-alpine
     logging:
       driver: none
-    # command: redis-server --requirepass 8b405f60665e48f795752e534d93b722
     volumes:
-      - ./redis/data:/data
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - './redis/data:/data'
+      - './redis/redis.conf:/usr/local/etc/redis/redis.conf'
     environment:
       - REDIS_REPLICATION_MODE=master
     restart: always
-    networks:
-      - default
+
 networks:
   default:
     driver: bridge
